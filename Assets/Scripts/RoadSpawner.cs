@@ -17,14 +17,14 @@ public class RoadSpawner : MonoBehaviour
         spawnPosition = transform.position;
         for (int i = 0; i < StartTilesCount; i++)
         {
-            GenerateRoad();
+            CreateTile();
         }
     }
     void Update()
     {
         if (spawnPosition.z - Player.position.z < SpawnDistance)
         {
-            GenerateRoad();
+            CreateTile();
         }
         if (Player.position.z - tiles[0].transform.position.z > DestroyDistance)
         {
@@ -33,7 +33,7 @@ public class RoadSpawner : MonoBehaviour
         }
     }
 
-    private void GenerateRoad()
+    private void CreateTile()
     {
         int randomIndex = Random.Range(0, Tiles.Length);
         GameObject newTile = Instantiate(Tiles[randomIndex], spawnPosition, Quaternion.identity);
