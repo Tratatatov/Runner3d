@@ -3,25 +3,55 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public GameObject GameOverScreen;
-    public Text ScoreText;
-    private int score = 0;
-    void Start()
-    {
-        ScoreText.text = "—чет: " + score.ToString();
-    }
+    public static GameManager Instance;
+    [SerializeField] private GameObject _gameOverScreen;
+    private Transform _playerTransform;
+    private Text _scoreText;
+    private int _bestScore;
+    private int _score = 0;
 
-    void Update()
-    {
+    public Transform PlayerTransform => _playerTransform;
 
-    }
     public void GameOver()
     {
-        GameOverScreen.SetActive(true);
+        SaveBestScore();
+        _gameOverScreen.SetActive(true);
     }
+
     public void AddScore()
     {
-        score++;
-        ScoreText.text = "—чет: " + score.ToString();
+        _score++;
+        ChangeScoreText();
     }
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(Instance);
+        }
+        Instance = this;
+        _scoreText = FindObjectOfType<ScoreText>().GetComponent<Text>();
+        _playerTransform = FindObjectOfType<PlayerController>().transform;
+        _gameOverScreen.SetActive(false);
+    }
+
+    private void Start()
+    {
+        ChangeScoreText();
+    }
+
+    private void SaveBestScore()
+    {
+        if (_score > _bestScore)
+        {
+            _bestScore = _score;
+        }
+        PlayerPrefs.SetInt(Constants.BestScore, _bestScore);
+    }
+    private void ChangeScoreText()
+    {
+        _scoreText.text = _score.ToString();
+    }
+
 }
