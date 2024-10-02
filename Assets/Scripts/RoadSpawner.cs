@@ -3,41 +3,54 @@ using UnityEngine;
 
 public class RoadSpawner : MonoBehaviour
 {
-    public GameObject[] Tiles;
-    public int StartTilesCount = 5;
-    public Transform Player;
-    private List<GameObject> tiles = new List<GameObject>();
-    private Vector3 spawnPosition;
-    public float SpawnDistance = 100f;
-    public float DestroyDistance = 20f;
+    //[SerializeField] private GameObject[] _tilePrefabs;
+    //[SerializeField] private GameObject _tileWithoutObjects;
+    [SerializeField] private int _startTilesCount = 3;
+    [SerializeField] private float _spawnDistance = 100f;
+    [SerializeField] private float _destroyDistance = 20f;
+    [SerializeField] private TilePool _tilePool;
+    private List<GameObject> _tilesOnTheRoad = new List<GameObject>();
+    private Vector3 _spawnPosition;
 
-
-    void Start()
+    private void Start()
     {
-        spawnPosition = transform.position;
-        for (int i = 0; i < StartTilesCount; i++)
+        _spawnPosition = transform.position;
+        for (int i = 0; i < _startTilesCount; i++)
         {
-            CreateTile();
-        }
-    }
-    void Update()
-    {
-        if (spawnPosition.z - Player.position.z < SpawnDistance)
-        {
-            CreateTile();
-        }
-        if (Player.position.z - tiles[0].transform.position.z > DestroyDistance)
-        {
-            Destroy(tiles[0]);
-            tiles.RemoveAt(0);
+            SpawnBlankTile();
         }
     }
 
-    private void CreateTile()
+    private void Update()
     {
-        int randomIndex = Random.Range(0, Tiles.Length);
-        GameObject newTile = Instantiate(Tiles[randomIndex], spawnPosition, Quaternion.identity);
-        tiles.Add(newTile);
-        spawnPosition.z += newTile.transform.localScale.z;
+        if (TileShouldSpawn())
+        {
+            SpawnTile();
+        }
+        if (TileShouldDestroy())
+        {
+            _tilePool.ReturnToPool(_tilesOnTheRoad[0]);
+            _tilesOnTheRoad.RemoveAt(0);
+        }
+    }
+
+    private bool TileShouldDestroy() => GameManager.Instance.PlayerTransform.position.z - _tilesOnTheRoad[0].transform.position.z > _destroyDistance;
+    private bool TileShouldSpawn() => _spawnPosition.z - GameManager.Instance.PlayerTransform.position.z < _spawnDistance;
+
+    private void SpawnTile()
+    {
+        GameObject tile = _tilePool.GetRandomTileFromPool();
+        tile.transform.position = _spawnPosition;
+        _tilesOnTheRoad.Add(tile);
+        _spawnPosition.z += tile.GetComponentInChildren<Ground>().transform.localScale.z;
+
+    } 
+    
+    private void SpawnBlankTile()
+    {
+        GameObject tile = _tilePool.GetBlankTile();
+        tile.transform.position = _spawnPosition;
+        _tilesOnTheRoad.Add(tile);
+        _spawnPosition.z += tile.GetComponentInChildren<Ground>().transform.localScale.z;
     }
 }
